@@ -20,8 +20,13 @@ export const ProtectedRoute = ({ children, allowedRoles }) => {
     return <Navigate to="/login" replace />
   }
 
-  if (allowedRoles && (!profile || !allowedRoles.includes(profile.role))) {
-    // Si no está autorizado para este rol, redirigir al Dashboard principal
+  if (!profile) {
+    // Si el perfil no existe o no se pudo cargar, redirigir a login para evitar bucles infinitos
+    return <Navigate to="/login" replace />
+  }
+
+  if (allowedRoles && !allowedRoles.includes(profile.role)) {
+    // Si no tiene el rol permitido para esta vista, redirigir al Dashboard principal
     return <Navigate to="/" replace />
   }
 
