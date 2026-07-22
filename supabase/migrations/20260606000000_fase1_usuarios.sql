@@ -12,14 +12,22 @@ CREATE TABLE IF NOT EXISTS public.profiles (
 -- 2. Habilitar RLS
 ALTER TABLE public.profiles ENABLE ROW LEVEL SECURITY;
 
+-- Función auxiliar para comprobar si el usuario es administrador (evita la recursión en RLS)
+CREATE OR REPLACE FUNCTION public.check_is_admin()
+RETURNS boolean AS $$
+BEGIN
+  RETURN EXISTS (
+    SELECT 1 FROM public.profiles
+    WHERE id = auth.uid() AND role = 'administrador' AND activo = true
+  );
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER SET search_path = public;
+
 -- 3. Crear Políticas de Seguridad RLS
-CREATE POLICY "Permitir lectura a usuarios autenticados y activos" ON public.profiles
+CREATE POLICY "Permitir lectura a dueños o administradores" ON public.profiles
     FOR SELECT TO authenticated
     USING (
-        EXISTS (
-            SELECT 1 FROM public.profiles p_check 
-            WHERE p_check.id = auth.uid() AND p_check.activo = true
-        )
+        auth.uid() = id OR public.check_is_admin()
     );
 
 CREATE POLICY "Permitir actualización de perfil propio" ON public.profiles
@@ -79,7 +87,15 @@ BEGIN
         raw_app_meta_data,
         raw_user_meta_data,
         created_at,
-        updated_at
+        updated_at,
+        confirmation_token,
+        email_change,
+        email_change_token_new,
+        recovery_token,
+        phone_change,
+        phone_change_token,
+        email_change_token_current,
+        reauthentication_token
     ) VALUES (
         '00000000-0000-0000-0000-000000000000',
         gen_random_uuid(),
@@ -91,7 +107,15 @@ BEGIN
         '{"provider":"email","providers":["email"]}',
         jsonb_build_object('nombre', p_nombre, 'apellido', p_apellido, 'role', p_role),
         now(),
-        now()
+        now(),
+        '',
+        '',
+        '',
+        '',
+        '',
+        '',
+        '',
+        ''
     ) RETURNING id INTO new_user_id;
 
     -- Crear identidad de Supabase Auth
@@ -100,6 +124,7 @@ BEGIN
         user_id,
         identity_data,
         provider,
+        provider_id,
         last_sign_in_at,
         created_at,
         updated_at
@@ -108,6 +133,7 @@ BEGIN
         new_user_id,
         jsonb_build_object('sub', new_user_id, 'email', p_email),
         'email',
+        new_user_id,
         now(),
         now(),
         now()
