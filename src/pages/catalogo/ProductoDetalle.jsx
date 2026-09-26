@@ -135,15 +135,15 @@ export default function ProductoDetalle() {
     <div className="min-h-screen bg-slate-50 flex flex-col">
 
       {/* ===== HEADER ===== */}
-      <header className="bg-slate-900 text-white sticky top-0 z-40 shadow-lg">
+      <header className="bg-[#E01602] text-white sticky top-0 z-40 shadow-lg">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 py-4 flex items-center justify-between gap-4">
           <Link to="/catalogo" className="flex flex-col leading-tight group">
-            <span className="text-[9px] font-bold text-violet-400 uppercase tracking-[0.25em]">Catálogo Oficial</span>
-            <span className="text-xl font-black tracking-tight group-hover:text-violet-300 transition-colors">MAURO SERGIO</span>
+            <span className="text-[9px] font-bold text-[#FAC400] uppercase tracking-[0.25em]">Catálogo Oficial</span>
+            <span className="text-xl font-black tracking-tight group-hover:text-[#FAC400] transition-colors">MAURO SERGIO</span>
           </Link>
           <Link
             to="/catalogo"
-            className="flex items-center gap-1.5 text-xs font-bold text-slate-400 hover:text-white transition-colors"
+            className="flex items-center gap-1.5 text-xs font-bold text-white/70 hover:text-white transition-colors"
           >
             <ArrowLeft size={14} />
             Volver al catálogo
@@ -330,9 +330,9 @@ export default function ProductoDetalle() {
       </main>
 
       {/* ===== FOOTER ===== */}
-      <footer className="bg-slate-900 text-slate-500 text-center py-6 mt-auto">
+      <footer className="bg-[#E01602] text-white/70 text-center py-6 mt-auto">
         <p className="text-xs font-semibold">
-          © {new Date().getFullYear()} <span className="text-white font-bold">MAURO SERGIO</span> — Todos los derechos reservados.
+          © {new Date().getFullYear()} <span className="text-white font-bold">MAURO SERGIO</span> — Pueyredón 942 San Francisco - Córdoba - Todos los derechos reservados.
         </p>
         <p className="text-[10px] mt-1">Los precios pueden variar sin previo aviso. Stock sujeto a disponibilidad.</p>
       </footer>
