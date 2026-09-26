@@ -121,9 +121,15 @@ export default function ProductoDetalle() {
   }
 
   const seasonColor = product ? (SEASON_COLORS[product.temporada] || 'bg-slate-100 text-slate-600') : ''
-  const whatsappUrl = product
-    ? `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(`Me Interesa ${product.nombre}`)}`
-    : '#'
+
+  const whatsappUrl = (() => {
+    if (!product) return '#'
+    const parts = [`Me interesa ${product.nombre}`]
+    if (product.talle) parts.push(`Talle ${product.talle}`)
+    if (product.color) parts.push(product.color)
+    parts.push(`https://maurosergiosf.vercel.app/catalogo/${product.id}`)
+    return `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(parts.join(' / '))}`
+  })()
 
   return (
     <div className="min-h-screen bg-slate-50 flex flex-col">
