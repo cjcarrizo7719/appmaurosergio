@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react'
+import { Link } from 'react-router-dom'
 import { supabase } from '../../lib/supabase'
 import { Search, SlidersHorizontal, X, ShoppingBag, Loader2, AlertCircle, Tag, Thermometer, Ruler } from 'lucide-react'
 
@@ -17,7 +18,10 @@ function ProductCard({ product }) {
   const seasonColor = SEASON_COLORS[product.temporada] || 'bg-slate-100 text-slate-600'
 
   return (
-    <div className="bg-white rounded-2xl border border-slate-100 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 overflow-hidden flex flex-col">
+    <Link
+      to={`/catalogo/${product.id}`}
+      className="bg-white rounded-2xl border border-slate-100 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 overflow-hidden flex flex-col cursor-pointer"
+    >
       {/* Image */}
       <div className="aspect-square bg-slate-50 overflow-hidden relative">
         {product.imagen_url ? (
@@ -72,7 +76,7 @@ function ProductCard({ product }) {
           <span className="text-base font-black text-slate-900">{formatMoney(product.precio_venta)}</span>
         </div>
       </div>
-    </div>
+    </Link>
   )
 }
 

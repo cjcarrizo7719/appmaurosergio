@@ -13,12 +13,14 @@ import SalesAdmin from '../pages/sales'
 import CashAdmin from '../pages/cash'
 import PlaceholderPage from '../pages/PlaceholderPage'
 import CatalogoPublico from '../pages/catalogo'
+import ProductoDetalle from '../pages/catalogo/ProductoDetalle'
 
 export const AppRouter = () => {
   return (
     <Routes>
       {/* Rutas Públicas */}
       <Route path="/catalogo" element={<CatalogoPublico />} />
+      <Route path="/catalogo/:id" element={<ProductoDetalle />} />
       <Route path="/login" element={<Login />} />
       <Route path="/recuperar" element={<Recover />} />
       <Route path="/restablecer" element={<ResetPassword />} />
