@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react'
 import { Link } from 'react-router-dom'
 import { supabase } from '../../lib/supabase'
-import { Search, SlidersHorizontal, X, ShoppingBag, Loader2, AlertCircle, Tag, Thermometer, Ruler } from 'lucide-react'
+import { Search, SlidersHorizontal, X, ShoppingBag, Loader2, AlertCircle, Tag, Thermometer, Ruler, ChevronLeft, ChevronRight } from 'lucide-react'
 
 const formatMoney = (amount) =>
   new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'ARS', maximumFractionDigits: 0 }).format(amount)
@@ -13,6 +13,8 @@ const SEASON_COLORS = {
   Primavera: 'bg-emerald-100 text-emerald-700',
   Permanente: 'bg-slate-100 text-slate-600',
 }
+
+const ITEMS_PER_PAGE = 30
 
 function ProductCard({ product }) {
   const seasonColor = SEASON_COLORS[product.temporada] || 'bg-slate-100 text-slate-600'
@@ -37,7 +39,6 @@ function ProductCard({ product }) {
             <span className="text-xs font-medium">Sin foto</span>
           </div>
         )}
-        {/* Season badge overlay */}
         {product.temporada && (
           <span className={`absolute top-2.5 right-2.5 text-[10px] font-bold px-2 py-0.5 rounded-full ${seasonColor}`}>
             {product.temporada}
@@ -52,7 +53,6 @@ function ProductCard({ product }) {
           <h3 className="font-bold text-slate-800 text-sm leading-snug mt-0.5 line-clamp-2">{product.nombre}</h3>
         </div>
 
-        {/* Tags row */}
         <div className="flex flex-wrap gap-1.5">
           {product.talle && (
             <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-violet-50 text-violet-700 border border-violet-100">
@@ -70,7 +70,6 @@ function ProductCard({ product }) {
           <p className="text-xs text-slate-400 line-clamp-2 leading-relaxed">{product.descripcion}</p>
         )}
 
-        {/* Footer: SKU + Price */}
         <div className="flex items-center justify-between mt-auto pt-3 border-t border-slate-50">
           <span className="text-[10px] font-mono text-slate-400">{product.sku}</span>
           <span className="text-base font-black text-slate-900">{formatMoney(product.precio_venta)}</span>
@@ -101,6 +100,67 @@ function FilterSelect({ label, icon: Icon, value, onChange, options, allLabel })
   )
 }
 
+function Pagination({ currentPage, totalPages, onPageChange }) {
+  if (totalPages <= 1) return null
+
+  const getPages = () => {
+    const pages = []
+    for (let i = 1; i <= totalPages; i++) {
+      if (i === 1 || i === totalPages || (i >= currentPage - 2 && i <= currentPage + 2)) {
+        pages.push(i)
+      }
+    }
+    const result = []
+    let prev = null
+    for (const page of pages) {
+      if (prev !== null && page - prev > 1) result.push('...')
+      result.push(page)
+      prev = page
+    }
+    return result
+  }
+
+  return (
+    <div className="flex items-center justify-center gap-1.5 mt-10">
+      <button
+        onClick={() => onPageChange(currentPage - 1)}
+        disabled={currentPage === 1}
+        className="h-9 w-9 flex items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-500 hover:text-slate-800 hover:border-slate-300 shadow-sm transition-all disabled:opacity-40 disabled:cursor-not-allowed"
+        aria-label="Página anterior"
+      >
+        <ChevronLeft size={18} />
+      </button>
+
+      {getPages().map((page, i) =>
+        page === '...' ? (
+          <span key={`ellipsis-${i}`} className="text-slate-400 text-sm font-semibold px-1 select-none">…</span>
+        ) : (
+          <button
+            key={page}
+            onClick={() => onPageChange(page)}
+            className={`h-9 min-w-[2.25rem] px-2.5 flex items-center justify-center rounded-xl text-sm font-bold transition-all ${
+              page === currentPage
+                ? 'bg-[#E45800] text-white shadow-md shadow-[#E45800]/30'
+                : 'border border-slate-200 bg-white text-slate-600 hover:border-slate-300 hover:text-slate-900 shadow-sm'
+            }`}
+          >
+            {page}
+          </button>
+        )
+      )}
+
+      <button
+        onClick={() => onPageChange(currentPage + 1)}
+        disabled={currentPage === totalPages}
+        className="h-9 w-9 flex items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-500 hover:text-slate-800 hover:border-slate-300 shadow-sm transition-all disabled:opacity-40 disabled:cursor-not-allowed"
+        aria-label="Página siguiente"
+      >
+        <ChevronRight size={18} />
+      </button>
+    </div>
+  )
+}
+
 export default function CatalogoPublico() {
   const [products, setProducts] = useState([])
   const [loading, setLoading] = useState(true)
@@ -111,6 +171,7 @@ export default function CatalogoPublico() {
   const [filterTemporada, setFilterTemporada] = useState('')
   const [filterTalle, setFilterTalle] = useState('')
   const [showFilters, setShowFilters] = useState(false)
+  const [currentPage, setCurrentPage] = useState(1)
 
   useEffect(() => {
     const fetchProducts = async () => {
@@ -136,7 +197,10 @@ export default function CatalogoPublico() {
     fetchProducts()
   }, [])
 
-  // Opciones de filtros generadas dinámicamente
+  useEffect(() => {
+    setCurrentPage(1)
+  }, [search, filterCategoria, filterTemporada, filterTalle])
+
   const categorias = useMemo(() => [...new Set(products.map((p) => p.categoria).filter(Boolean))].sort(), [products])
   const temporadas = useMemo(() => [...new Set(products.map((p) => p.temporada).filter(Boolean))].sort(), [products])
   const talles = useMemo(() => [...new Set(products.map((p) => p.talle).filter(Boolean))].sort(), [products])
@@ -160,6 +224,15 @@ export default function CatalogoPublico() {
       return true
     })
   }, [products, search, filterCategoria, filterTemporada, filterTalle])
+
+  const totalPages = Math.ceil(filtered.length / ITEMS_PER_PAGE)
+  const pageStart = (currentPage - 1) * ITEMS_PER_PAGE
+  const paginatedProducts = filtered.slice(pageStart, pageStart + ITEMS_PER_PAGE)
+
+  const handlePageChange = (page) => {
+    setCurrentPage(page)
+    window.scrollTo({ top: 0, behavior: 'smooth' })
+  }
 
   return (
     <div className="min-h-screen bg-slate-50 flex flex-col">
@@ -202,7 +275,7 @@ export default function CatalogoPublico() {
               onClick={() => setShowFilters((v) => !v)}
               className={`flex items-center gap-2 px-3.5 py-2 rounded-xl border text-xs font-bold transition-all ${
                 showFilters || activeFiltersCount > 0
-                  ? 'bg-white text-[#FFEB01] border-white'
+                  ? 'bg-white text-[#E45800] border-white'
                   : 'bg-white/20 border-white/30 text-white hover:bg-white/30 hover:border-white/50'
               }`}
             >
@@ -296,7 +369,9 @@ export default function CatalogoPublico() {
                 <p className="text-xs text-slate-400 font-semibold mt-0.5">
                   {filtered.length === 0
                     ? 'Ninguna prenda coincide con los filtros aplicados.'
-                    : `${filtered.length} ${filtered.length === 1 ? 'prenda encontrada' : 'prendas encontradas'}`}
+                    : totalPages > 1
+                      ? `Mostrando ${pageStart + 1}–${Math.min(pageStart + ITEMS_PER_PAGE, filtered.length)} de ${filtered.length} prendas`
+                      : `${filtered.length} ${filtered.length === 1 ? 'prenda encontrada' : 'prendas encontradas'}`}
                 </p>
               </div>
 
@@ -343,11 +418,19 @@ export default function CatalogoPublico() {
                 </button>
               </div>
             ) : (
-              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
-                {filtered.map((product) => (
-                  <ProductCard key={product.id} product={product} />
-                ))}
-              </div>
+              <>
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+                  {paginatedProducts.map((product) => (
+                    <ProductCard key={product.id} product={product} />
+                  ))}
+                </div>
+
+                <Pagination
+                  currentPage={currentPage}
+                  totalPages={totalPages}
+                  onPageChange={handlePageChange}
+                />
+              </>
             )}
           </>
         )}
