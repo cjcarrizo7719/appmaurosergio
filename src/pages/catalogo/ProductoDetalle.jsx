@@ -135,10 +135,10 @@ export default function ProductoDetalle() {
     <div className="min-h-screen bg-slate-50 flex flex-col">
 
       {/* ===== HEADER ===== */}
-      <header className="bg-[#FBD603] text-white sticky top-0 z-40 shadow-lg">
+      <header className="bg-[#E45800] text-white sticky top-0 z-40 shadow-lg">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 py-4 flex items-center justify-between gap-4">
           <Link to="/catalogo" className="flex flex-col leading-tight group">
-            <span className="text-[9px] font-bold text-[#E01602] uppercase tracking-[0.25em]">Catálogo Oficial</span>
+            <span className="text-[9px] font-bold text-[#FFEB01] uppercase tracking-[0.25em]">Catálogo Oficial</span>
             <span className="text-xl font-black tracking-tight group-hover:text-[#FAC400] transition-colors">MAURO SERGIO</span>
           </Link>
           <Link
@@ -330,7 +330,7 @@ export default function ProductoDetalle() {
       </main>
 
       {/* ===== FOOTER ===== */}
-      <footer className="bg-[#FBD603] text-white/70 text-center py-6 mt-auto">
+      <footer className="bg-[#E45800] text-white/70 text-center py-6 mt-auto">
         <p className="text-xs font-semibold">
           © {new Date().getFullYear()} <span className="text-white font-bold">MAURO SERGIO</span> — Pueyredón 942 San Francisco - Córdoba - Todos los derechos reservados.
         </p>

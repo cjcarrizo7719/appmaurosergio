@@ -164,20 +164,20 @@ export default function CatalogoPublico() {
   return (
     <div className="min-h-screen bg-slate-50 flex flex-col">
       {/* ===== HEADER ===== */}
-      <header className="bg-[#FBD603] text-white sticky top-0 z-40 shadow-lg">
+      <header className="bg-[#E45800] text-white sticky top-0 z-40 shadow-lg">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 py-4 flex items-center justify-between gap-4">
           <div className="flex flex-col leading-tight">
-            <span className="text-[9px] font-bold text-[#E01602] uppercase tracking-[0.25em]">Catálogo Oficial</span>
+            <span className="text-[9px] font-bold text-[#FFEB01] uppercase tracking-[0.25em]">Catálogo Oficial</span>
             <span className="text-xl font-black tracking-tight">MAURO SERGIO</span>
           </div>
           <div className="hidden sm:flex items-center gap-2 text-xs text-white/80 font-semibold">
-            <ShoppingBag size={14} className="text-[#E01602]" />
+            <ShoppingBag size={14} className="text-[#FFEB01]" />
             <span>{loading ? '...' : `${products.length} prendas disponibles`}</span>
           </div>
         </div>
 
         {/* Search bar in header */}
-        <div className="border-t border-[#e8c400]">
+        <div className="border-t border-[#cc5000]">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 py-3 flex items-center gap-3">
             <div className="relative flex-1 max-w-lg">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-white/60" size={16} />
@@ -202,7 +202,7 @@ export default function CatalogoPublico() {
               onClick={() => setShowFilters((v) => !v)}
               className={`flex items-center gap-2 px-3.5 py-2 rounded-xl border text-xs font-bold transition-all ${
                 showFilters || activeFiltersCount > 0
-                  ? 'bg-white text-[#E01602] border-white'
+                  ? 'bg-white text-[#FFEB01] border-white'
                   : 'bg-white/20 border-white/30 text-white hover:bg-white/30 hover:border-white/50'
               }`}
             >
@@ -219,7 +219,7 @@ export default function CatalogoPublico() {
 
         {/* Expandable filter panel */}
         {showFilters && (
-          <div className="border-t border-[#e8c400] bg-[#FBD603]/95 backdrop-blur-sm">
+          <div className="border-t border-[#cc5000] bg-[#E45800]/95 backdrop-blur-sm">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 py-4">
               <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 items-end">
                 <FilterSelect
@@ -354,7 +354,7 @@ export default function CatalogoPublico() {
       </main>
 
       {/* ===== FOOTER ===== */}
-      <footer className="bg-[#FBD603] text-white/70 text-center py-6 mt-auto">
+      <footer className="bg-[#E45800] text-white/70 text-center py-6 mt-auto">
         <p className="text-xs font-semibold">
           © {new Date().getFullYear()} <span className="text-white font-bold">MAURO SERGIO</span> — Pueyredón 942 San Francisco - Córdoba - Todos los derechos reservados.
         </p>
