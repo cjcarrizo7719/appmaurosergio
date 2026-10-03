@@ -238,7 +238,7 @@ export default function CatalogoPublico() {
         if (ao !== bo) return ao - bo
         return (a.nombre || '').localeCompare(b.nombre || '', 'es')
       })
-  }, [products, search, filterCategoria, filterTemporada, filterTalle])
+  }, [products, search, filterCategoria, filterTemporada])
 
   const totalPages = Math.ceil(filtered.length / ITEMS_PER_PAGE)
   const pageStart = (currentPage - 1) * ITEMS_PER_PAGE
@@ -383,7 +383,7 @@ export default function CatalogoPublico() {
             <div className="flex items-center justify-between mb-6">
               <div>
                 <h2 className="text-lg font-black text-slate-800">
-                  {filterCategoria || filterTemporada || filterTalle || search
+                  {filterCategoria || filterTemporada || search
                     ? 'Resultados de búsqueda'
                     : 'Colección completa'}
                 </h2>
