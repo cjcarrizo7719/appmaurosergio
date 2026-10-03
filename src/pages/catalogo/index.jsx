@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react'
 import { Link } from 'react-router-dom'
 import { supabase } from '../../lib/supabase'
-import { Search, SlidersHorizontal, X, ShoppingBag, Loader2, AlertCircle, Tag, Thermometer, Ruler, ChevronLeft, ChevronRight } from 'lucide-react'
+import { Search, SlidersHorizontal, X, ShoppingBag, Loader2, AlertCircle, Tag, Thermometer, ChevronLeft, ChevronRight } from 'lucide-react'
 
 const formatMoney = (amount) =>
   new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'ARS', maximumFractionDigits: 0 }).format(amount)
@@ -12,6 +12,16 @@ const SEASON_COLORS = {
   Otoño: 'bg-orange-100 text-orange-700',
   Primavera: 'bg-emerald-100 text-emerald-700',
   Permanente: 'bg-slate-100 text-slate-600',
+}
+
+const SEASON_ORDER = ['Permanente', 'Primavera', 'Verano', 'Otoño', 'Invierno']
+
+const SEASON_SECTION_STYLES = {
+  Permanente: { pill: 'bg-slate-100 text-slate-600 border-slate-200', line: 'bg-slate-200' },
+  Primavera:  { pill: 'bg-emerald-100 text-emerald-700 border-emerald-200', line: 'bg-emerald-200' },
+  Verano:     { pill: 'bg-amber-100 text-amber-700 border-amber-200', line: 'bg-amber-200' },
+  Otoño:      { pill: 'bg-orange-100 text-orange-700 border-orange-200', line: 'bg-orange-200' },
+  Invierno:   { pill: 'bg-blue-100 text-blue-700 border-blue-200', line: 'bg-blue-200' },
 }
 
 const ITEMS_PER_PAGE = 30
@@ -169,7 +179,6 @@ export default function CatalogoPublico() {
   const [search, setSearch] = useState('')
   const [filterCategoria, setFilterCategoria] = useState('')
   const [filterTemporada, setFilterTemporada] = useState('')
-  const [filterTalle, setFilterTalle] = useState('')
   const [showFilters, setShowFilters] = useState(false)
   const [currentPage, setCurrentPage] = useState(1)
 
@@ -199,30 +208,36 @@ export default function CatalogoPublico() {
 
   useEffect(() => {
     setCurrentPage(1)
-  }, [search, filterCategoria, filterTemporada, filterTalle])
+  }, [search, filterCategoria, filterTemporada])
 
   const categorias = useMemo(() => [...new Set(products.map((p) => p.categoria).filter(Boolean))].sort(), [products])
   const temporadas = useMemo(() => [...new Set(products.map((p) => p.temporada).filter(Boolean))].sort(), [products])
-  const talles = useMemo(() => [...new Set(products.map((p) => p.talle).filter(Boolean))].sort(), [products])
 
-  const activeFiltersCount = [filterCategoria, filterTemporada, filterTalle].filter(Boolean).length
+  const activeFiltersCount = [filterCategoria, filterTemporada].filter(Boolean).length
 
   const clearFilters = () => {
     setFilterCategoria('')
     setFilterTemporada('')
-    setFilterTalle('')
     setSearch('')
   }
 
   const filtered = useMemo(() => {
-    return products.filter((p) => {
-      const searchStr = `${p.nombre} ${p.sku} ${p.color || ''} ${p.descripcion || ''}`.toLowerCase()
-      if (search && !searchStr.includes(search.toLowerCase())) return false
-      if (filterCategoria && p.categoria !== filterCategoria) return false
-      if (filterTemporada && p.temporada !== filterTemporada) return false
-      if (filterTalle && p.talle !== filterTalle) return false
-      return true
-    })
+    return products
+      .filter((p) => {
+        const searchStr = `${p.nombre} ${p.sku} ${p.color || ''} ${p.descripcion || ''}`.toLowerCase()
+        if (search && !searchStr.includes(search.toLowerCase())) return false
+        if (filterCategoria && p.categoria !== filterCategoria) return false
+        if (filterTemporada && p.temporada !== filterTemporada) return false
+        return true
+      })
+      .sort((a, b) => {
+        const ai = SEASON_ORDER.indexOf(a.temporada)
+        const bi = SEASON_ORDER.indexOf(b.temporada)
+        const ao = ai === -1 ? 999 : ai
+        const bo = bi === -1 ? 999 : bi
+        if (ao !== bo) return ao - bo
+        return (a.nombre || '').localeCompare(b.nombre || '', 'es')
+      })
   }, [products, search, filterCategoria, filterTemporada, filterTalle])
 
   const totalPages = Math.ceil(filtered.length / ITEMS_PER_PAGE)
@@ -233,6 +248,20 @@ export default function CatalogoPublico() {
     setCurrentPage(page)
     window.scrollTo({ top: 0, behavior: 'smooth' })
   }
+
+  const groupedPaginatedProducts = useMemo(() => {
+    const groups = []
+    let currentSeason = null
+    for (const product of paginatedProducts) {
+      if (product.temporada !== currentSeason) {
+        currentSeason = product.temporada
+        groups.push({ season: currentSeason, items: [product] })
+      } else {
+        groups[groups.length - 1].items.push(product)
+      }
+    }
+    return groups
+  }, [paginatedProducts])
 
   return (
     <div className="min-h-screen bg-slate-50 flex flex-col">
@@ -311,14 +340,6 @@ export default function CatalogoPublico() {
                   options={temporadas}
                   allLabel="Todas las temporadas"
                 />
-                <FilterSelect
-                  label="Talle"
-                  icon={Ruler}
-                  value={filterTalle}
-                  onChange={setFilterTalle}
-                  options={talles}
-                  allLabel="Todos los talles"
-                />
                 {(activeFiltersCount > 0 || search) && (
                   <button
                     onClick={clearFilters}
@@ -376,7 +397,7 @@ export default function CatalogoPublico() {
               </div>
 
               {/* Active filter chips */}
-              {(filterCategoria || filterTemporada || filterTalle) && (
+              {(filterCategoria || filterTemporada) && (
                 <div className="hidden sm:flex flex-wrap gap-2">
                   {filterCategoria && (
                     <span className="flex items-center gap-1 text-[10px] font-bold px-2.5 py-1 rounded-full bg-violet-100 text-violet-700">
@@ -388,12 +409,6 @@ export default function CatalogoPublico() {
                     <span className="flex items-center gap-1 text-[10px] font-bold px-2.5 py-1 rounded-full bg-violet-100 text-violet-700">
                       {filterTemporada}
                       <button onClick={() => setFilterTemporada('')}><X size={10} /></button>
-                    </span>
-                  )}
-                  {filterTalle && (
-                    <span className="flex items-center gap-1 text-[10px] font-bold px-2.5 py-1 rounded-full bg-violet-100 text-violet-700">
-                      Talle {filterTalle}
-                      <button onClick={() => setFilterTalle('')}><X size={10} /></button>
                     </span>
                   )}
                 </div>
@@ -419,11 +434,25 @@ export default function CatalogoPublico() {
               </div>
             ) : (
               <>
-                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
-                  {paginatedProducts.map((product) => (
-                    <ProductCard key={product.id} product={product} />
-                  ))}
-                </div>
+                {groupedPaginatedProducts.map(({ season, items }) => {
+                  const style = SEASON_SECTION_STYLES[season] || SEASON_SECTION_STYLES['Permanente']
+                  return (
+                    <div key={season || 'sin-temporada'} className="mb-10">
+                      <div className="flex items-center gap-3 mb-5">
+                        <span className={`text-xs font-black px-3 py-1 rounded-full border uppercase tracking-widest ${style.pill}`}>
+                          {season || 'Sin temporada'}
+                        </span>
+                        <div className={`flex-1 h-px ${style.line}`} />
+                        <span className="text-[10px] font-bold text-slate-400">{items.length} {items.length === 1 ? 'prenda' : 'prendas'}</span>
+                      </div>
+                      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+                        {items.map((product) => (
+                          <ProductCard key={product.id} product={product} />
+                        ))}
+                      </div>
+                    </div>
+                  )
+                })}
 
                 <Pagination
                   currentPage={currentPage}
@@ -439,7 +468,7 @@ export default function CatalogoPublico() {
       {/* ===== FOOTER ===== */}
       <footer className="bg-[#E45800] text-white/70 text-center py-6 mt-auto">
         <p className="text-xs font-semibold">
-          © {new Date().getFullYear()} <span className="text-white font-bold">MAURO SERGIO</span> — Pueyredón 942 San Francisco - Córdoba - Todos los derechos reservados.
+          © {new Date().getFullYear()} <span className="text-white font-bold">MAURO SERGIO</span> — Pueyredón 946 San Francisco - Córdoba - Todos los derechos reservados.
         </p>
         <p className="text-[10px] mt-1">Los precios pueden variar sin previo aviso. Stock sujeto a disponibilidad.</p>
       </footer>
