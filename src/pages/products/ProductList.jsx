@@ -1,6 +1,6 @@
 import React from 'react'
 import { Badge } from '../../components/ui/Badge'
-import { Edit2, PowerOff, Power, LayoutGrid, Table as TableIcon, Image as ImageIcon } from 'lucide-react'
+import { Edit2, PowerOff, Power, LayoutGrid, Table as TableIcon, Image as ImageIcon, Trash2 } from 'lucide-react'
 import { useAuth } from '../../context/AuthContext'
 
 export const ProductList = ({
@@ -8,7 +8,8 @@ export const ProductList = ({
   loading,
   viewMode = 'grid',
   onToggleActive,
-  onEdit
+  onEdit,
+  onDelete
 }) => {
   const { isAdmin } = useAuth()
 
@@ -122,6 +123,13 @@ export const ProductList = ({
                       >
                         {p.activo ? <PowerOff size={14} /> : <Power size={14} />}
                       </button>
+                      <button
+                        onClick={() => onDelete(p)}
+                        className="p-2 rounded-xl border border-rose-100 bg-rose-50/50 text-rose-400 hover:bg-rose-100 hover:text-rose-600 transition-colors"
+                        title="Eliminar producto"
+                      >
+                        <Trash2 size={14} />
+                      </button>
                     </div>
                   )}
                 </div>
@@ -195,6 +203,13 @@ export const ProductList = ({
                         title={p.activo ? 'Desactivar prenda' : 'Activar prenda'}
                       >
                         {p.activo ? <PowerOff size={15} /> : <Power size={15} />}
+                      </button>
+                      <button
+                        onClick={() => onDelete(p)}
+                        className="p-1.5 rounded-lg border border-rose-100 bg-rose-50/50 text-rose-400 hover:bg-rose-100 hover:text-rose-600 transition-all inline-flex"
+                        title="Eliminar prenda"
+                      >
+                        <Trash2 size={15} />
                       </button>
                     </td>
                   )}

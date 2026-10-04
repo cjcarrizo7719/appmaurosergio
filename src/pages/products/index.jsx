@@ -23,9 +23,12 @@ export default function ProductsAdmin() {
   // Configuración de vista
   const [viewMode, setViewMode] = useState('grid') // grid, table
 
-  // Modal
+  // Modal formulario
   const [isFormOpen, setIsFormOpen] = useState(false)
   const [selectedProduct, setSelectedProduct] = useState(null)
+
+  // Modal confirmación de eliminación
+  const [productToDelete, setProductToDelete] = useState(null)
 
   const fetchProducts = async () => {
     setLoading(true)
@@ -83,6 +86,34 @@ export default function ProductsAdmin() {
   const handleFormSuccess = () => {
     setIsFormOpen(false)
     fetchProducts()
+  }
+
+  const handleDeleteRequest = (product) => {
+    setProductToDelete(product)
+  }
+
+  const handleDeleteConfirm = async () => {
+    if (!productToDelete) return
+    setError(null)
+    try {
+      const { error: deleteError } = await supabase
+        .from('productos')
+        .delete()
+        .eq('id', productToDelete.id)
+
+      if (deleteError) throw deleteError
+
+      setProducts((prev) => prev.filter((p) => p.id !== productToDelete.id))
+    } catch (err) {
+      console.error('Error al eliminar producto:', err.message)
+      setError('No se pudo eliminar el producto.')
+    } finally {
+      setProductToDelete(null)
+    }
+  }
+
+  const handleDeleteCancel = () => {
+    setProductToDelete(null)
   }
 
   // Obtener categorías y temporadas dinámicas de los productos cargados
@@ -237,6 +268,7 @@ export default function ProductsAdmin() {
             viewMode={viewMode}
             onToggleActive={handleToggleActive}
             onEdit={handleOpenEdit}
+            onDelete={handleDeleteRequest}
           />
 
           {/* Modal Form */}
@@ -251,6 +283,34 @@ export default function ProductsAdmin() {
               onSuccess={handleFormSuccess}
               onCancel={() => setIsFormOpen(false)}
             />
+          </Modal>
+
+          {/* Modal Confirmación Eliminación */}
+          <Modal
+            isOpen={!!productToDelete}
+            onClose={handleDeleteCancel}
+            title="Eliminar prenda"
+            size="sm"
+          >
+            <div className="flex flex-col gap-5">
+              <p className="text-slate-600 text-sm">
+                ¿Deseas eliminar la prenda <span className="font-bold text-slate-800">"{productToDelete?.nombre}"</span>? Esta acción no se puede deshacer.
+              </p>
+              <div className="flex justify-end gap-3">
+                <button
+                  onClick={handleDeleteCancel}
+                  className="px-5 py-2 rounded-xl border border-slate-200 text-slate-600 text-sm font-semibold hover:bg-slate-50 transition-colors"
+                >
+                  No
+                </button>
+                <button
+                  onClick={handleDeleteConfirm}
+                  className="px-5 py-2 rounded-xl bg-rose-500 text-white text-sm font-semibold hover:bg-rose-600 transition-colors"
+                >
+                  Sí, eliminar
+                </button>
+              </div>
+            </div>
           </Modal>
         </div>
       </PageLayout>
