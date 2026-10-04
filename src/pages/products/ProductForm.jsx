@@ -23,7 +23,7 @@ const productSchema = z.object({
   path: ['precio_venta']
 })
 
-const CATEGORIAS_COMUNES = ['Sweaters', 'Remeras', 'Jeans', 'Pantalones', 'Poleras', 'Cardigans', 'Camisas', 'Accesorios']
+const CATEGORIAS_COMUNES = ['Sweaters', 'Remeras', 'Musculosa', 'Jeans', 'Pantalones', 'Poleras', 'Cardigans', 'Camisas', 'Accesorios']
 const TEMPORADAS_COMUNES = ['Invierno', 'Verano', 'Otoño', 'Primavera', 'Permanente']
 
 export const ProductForm = ({ product, onSuccess, onCancel }) => {
